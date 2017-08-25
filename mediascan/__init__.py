@@ -1,33 +1,36 @@
 
 import logging
-logger = logging.getLogger('TwdbFile')
+logger = logging.getLogger('mediascan')
+getLogger = logger.getChild
 
 from . import mediainfo
 
-read_file = mediainfo.read_file
 
-
-import concurrent.futures
 import __main__ as main
-
-class Pool(concurrent.futures.ProcessPoolExecutor):
-	"""
-	This spawns new processes. It's not compatible with the interactive interpreter.
-	"""
-	pass
-
-
 interactive = (hasattr(main, '__file__'))
+
+
+"""
+Concurrent loading only enabled if not interactive.
+"""
 if (interactive):
-	"""
-	Concurrent loading only enabled if not interactive.
-	"""
-	def read_files(*args, **kwargs):
-		for arg in args:
-			yield from read_file(arg, **kwargs)
+	concurrent = None
 else:
-	def read_files(*args, **kwargs):
+	import concurrent
+	import concurrent.futures
+
+if (concurrent):
+	class Pool(concurrent.futures.ProcessPoolExecutor):
+		"""
+		This spawns new processes. It's not compatible with the interactive interpreter.
+		"""
+		pass
+	def read_xml(*args, **kwargs):
 		with Pool() as executor:
-			futures = [ executor.submit(read_file, arg, **kwargs) for arg in args ]
+			futures = [ executor.submit(mediainfo.read_xml, arg, **kwargs) for arg in args ]
 			for fs in concurrent.futures.as_completed(futures):
 				yield from fs.result()
+else:
+	def read_xml(*args, **kwargs):
+		for arg in args:
+			yield from mediainfo.read_xml(arg, **kwargs)

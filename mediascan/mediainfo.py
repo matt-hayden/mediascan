@@ -63,6 +63,8 @@ class MediaInfo:
 		self.general = []
 		if (isinstance(arg, ET.Element)):
 			self.from_node(arg)
+	def __str__(self):
+		return "<Mediainfo({})>".format(self.filename)
 	def add_audio_track(self, arg, place=None):
 		if (place is None):
 			self.audio.append(AudioTrack(arg))
@@ -136,38 +138,14 @@ class MediaInfo:
 				warn("Ignoring track type '{}'".format(tt))
 			else:
 				warn("Ignoring track type '{}'".format(tt))
-def read_file(filename):
+def read_xml(arg):
 	try:
-		tree = ET.parse(filename)
+		tree = ET.fromstring(arg)
 	except Exception as e:
-		error("Perhaps {} is not valid XML".format(filename))
+		error("Perhaps {} is not valid XML".format(arg[:80]))
 		raise e
-	troot = tree.getroot()
+	troot = tree # tree.getroot() if opening a file.
 	debug("{} elements in {}".format(len(list(troot)), troot))
 	assert (troot.tag == 'Mediainfo')
 	for fnode in troot:
 		yield MediaInfo(fnode)
-
-
-if __name__ == '__main__':
-	import sys
-	args = sys.argv[1:]
-	if (not sys.stderr.isatty()):
-		logging.basicConfig(level=logging.DEBUG)
-	videos, songs = [], []
-	for arg in args:
-		for mi in read_file(arg):
-			if (mi.video):
-				videos.append(mi)
-			else:
-				songs.append(mi)
-	videos.sort(key=lambda v: v.get_size())
-	for v in videos:
-		print( "{:<47}\t{!s:^15}\t{:>15}".format(
-			v.get_name(),
-			max(v.dimensions),
-			v.get_size() ))
-	for m in songs:
-		print( "{:<63}\t{:>7}".format(
-			m.get_name(),
-			m.general.get('Duration') ))

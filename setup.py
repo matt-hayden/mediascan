@@ -75,7 +75,7 @@ setup(
     # https://packaging.python.org/en/latest/requirements.html
 	#
 	# https://github.com/deeplook/sparklines requires future
-    #install_requires=[ 'xml' ],
+    #install_requires=[  ],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
@@ -104,7 +104,7 @@ setup(
     # pip to create the appropriate form of executable for the target platform.
     entry_points={
         'console_scripts': [
-            'mediascan = mediascan:cli.scan',
+            'mediascan = mediascan.cli:scan',
         ],
     },
 )
